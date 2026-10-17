@@ -2,6 +2,7 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+#include "FreeRTOSConfig.h"
 
 /* HAL includes */
 #include "hal_interface.h"
@@ -15,12 +16,10 @@
 #define APP_STARTUP_DELAY_MS 100
 #define APP_MAX_STARTUP_ATTEMPTS 3
 
-/* ===== FORWARD DECLARATIONS ===== */
-
-static void vApplicationIdleHook(void);
-static void vApplicationTickHook(void);
-static void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName);
-static void vApplicationMallocFailedHook(void);
+/* ===== FORWARD DECLARATIONS =====
+ * These are provided as weak symbols in the FreeRTOS stub headers
+ * to allow optional implementation by the application
+ */
 
 /* ===== LOGGING UTILITIES ===== */
 
@@ -56,6 +55,7 @@ void vApplicationIdleHook(void) {
  * vApplicationTickHook: Called on every FreeRTOS tick
  * Warning: Keep this function SHORT to avoid blocking other tasks
  */
+__attribute__((weak))
 void vApplicationTickHook(void) {
     /* Tick hook - called every 1ms */
     /* Use sparingly; long execution blocks scheduler */
@@ -68,6 +68,8 @@ void vApplicationTickHook(void) {
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
     /* Disable interrupts to prevent further corruption */
     taskDISABLE_INTERRUPTS();
+
+    (void)xTask;  /* Suppress unused parameter warning */
 
     log_message("ERROR: Stack overflow detected!");
     if (pcTaskName != NULL) {
@@ -120,8 +122,6 @@ static void vApplicationInit(void) {
 /* ===== MAIN APPLICATION ===== */
 
 int main(void) {
-    BaseType_t status;
-
     /* Initialize hardware and logging */
     vApplicationInit();
 

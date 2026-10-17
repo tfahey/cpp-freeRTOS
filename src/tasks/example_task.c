@@ -1,5 +1,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
+#include "FreeRTOSConfig.h"
 #include "example_task.h"
 #include <stdio.h>
 #include <string.h>
@@ -30,13 +31,13 @@ void vExampleTask(void *pvParameters) {
         /* Log task execution */
         #ifdef __linux__
         /* x86-64 POSIX simulation */
-        printf("Task %lu running (count=%lu)\n", task_id, g_task_counter[task_id]);
+        printf("Task %u running (count=%u)\n", (unsigned)task_id, (unsigned)g_task_counter[task_id]);
         #else
         /* ARM bare-metal - use logging functions */
         char buffer[64];
         snprintf(buffer, sizeof(buffer),
-                 "Task %lu running (count=%lu)",
-                 task_id, g_task_counter[task_id]);
+                 "Task %u running (count=%u)",
+                 (unsigned)task_id, (unsigned)g_task_counter[task_id]);
         /* Note: log_message function defined in HAL */
         extern void log_message(const char *msg);
         log_message(buffer);
