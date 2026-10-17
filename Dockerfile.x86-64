@@ -1,0 +1,58 @@
+FROM ubuntu:22.04
+
+LABEL maintainer="FreeRTOS Build Team"
+LABEL description="FreeRTOS x86-64 build and SAST scanning environment"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# ===== INSTALL DEPENDENCIES =====
+RUN apt-get update && apt-get install -y \
+    # Native compiler
+    gcc \
+    g++ \
+    binutils \
+    \
+    # Build tools
+    cmake \
+    build-essential \
+    make \
+    autoconf \
+    automake \
+    libtool \
+    \
+    # Development utilities
+    git \
+    curl \
+    wget \
+    ca-certificates \
+    \
+    # SAST scanning
+    jq \
+    python3 \
+    python3-pip \
+    \
+    # Diagnostics
+    file \
+    gdb \
+    \
+    && rm -rf /var/lib/apt/lists/*
+
+# ===== INSTALL VERACODE CLI =====
+# Note: Installation may fail in some environments; marked as non-fatal
+RUN curl -fsS https://tools.veracode.com/veracode-cli/install | sh || true
+
+# ===== CREATE NON-ROOT USER =====
+RUN useradd -m -s /bin/bash -u 1000 builder && \
+    mkdir -p /home/builder/project && \
+    chown -R builder:builder /home/builder
+
+# ===== SETUP ENVIRONMENT =====
+COPY freertos-env.sh /opt/
+RUN chmod +x /opt/freertos-env.sh
+
+WORKDIR /home/builder/project
+
+USER builder
+
+CMD ["/bin/bash"]

@@ -1,0 +1,5 @@
+# x86-64 POSIX Simulation HAL placeholder
+# This directory contains HAL stubs for x86-64 testing:
+# - Minimal implementations that allow FreeRTOS to run on Linux
+# - Uses POSIX threading instead of bare-metal interrupts
+# - Useful for CI/CD and unit testing

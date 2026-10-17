@@ -1,0 +1,5 @@
+# Device drivers placeholder
+# This directory will contain HAL abstraction wrappers:
+# - uart.c / uart.h - Serial communication driver
+# - gpio.c / gpio.h - GPIO driver for LEDs/buttons
+# - timer.c / timer.h - Timer driver (if needed)

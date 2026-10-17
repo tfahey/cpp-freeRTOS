@@ -1,0 +1,46 @@
+# Build artifacts
+freertos-output/
+build/
+*.elf
+*.bin
+*.map
+*.lst
+*.sym
+
+# Build caches (user's home)
+.freertos-cache/
+
+# Preprocessed source (SAST)
+preprocessed-src/
+*.i
+*.ii
+
+# Veracode packaging
+veracode-package/
+
+# Security reports
+sast-reports/
+
+# IDE and build tools
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Object files
+*.o
+*.a
+*.so
+*.dylib
+
+# Debug symbols
+*.dSYM/
