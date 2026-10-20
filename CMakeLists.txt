@@ -21,12 +21,10 @@ message(STATUS "Toolchain: ${CMAKE_TOOLCHAIN_FILE}")
 # Use compiler detection (arm-linux-gnueabihf-gcc indicates ARM)
 if(CMAKE_C_COMPILER MATCHES "arm-linux-gnueabihf" OR CMAKE_SYSTEM_PROCESSOR MATCHES "ARM")
     message(STATUS "Building for ARM architecture")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a -mfpu=neon -mthumb")
-    add_compile_definitions(__ARM_ARCH)
+    # Flags already set by toolchain file
 else()
     message(STATUS "Building for x86-64 architecture")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64 -pthread")
-    add_compile_definitions(__X86_64__)
+    # Flags already set by toolchain file
 endif()
 
 # ===== CMAKE MODULE PATH =====
@@ -43,6 +41,7 @@ message(STATUS "HAL found at: ${HAL_DIR}")
 set(SOURCE_FILES
     src/main.c
     src/tasks/example_task.c
+    src/freertos_stubs.c
 )
 
 # Assembly files only for ARM

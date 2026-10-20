@@ -12,7 +12,7 @@
 # ===== LOCATE FREERTOS DIRECTORY =====
 if(NOT FREERTOS_DIR)
     find_path(FREERTOS_DIR
-        NAMES Source/FreeRTOS.h
+        NAMES tasks.c include/FreeRTOS.h
         PATHS
             ${CMAKE_CURRENT_SOURCE_DIR}/freertos-kernel
             /opt/freertos-kernel
@@ -31,10 +31,22 @@ endif()
 
 message(STATUS "FreeRTOS kernel: ${FREERTOS_DIR}")
 
-# ===== VALIDATE FREERTOS DIRECTORY =====
-if(NOT EXISTS "${FREERTOS_DIR}/Source/FreeRTOS.h")
+# ===== DETECT KERNEL STRUCTURE (v11.3.1 flat vs older Source/) =====
+if(EXISTS "${FREERTOS_DIR}/include/FreeRTOS.h")
+    # FreeRTOS v11.3.1 structure: headers in include/, sources in root
+    set(FREERTOS_HEADER_DIR "${FREERTOS_DIR}/include")
+    set(FREERTOS_SOURCE_DIR "${FREERTOS_DIR}")
+    set(FREERTOS_STRUCTURE_V11 TRUE)
+    message(STATUS "FreeRTOS: Detected v11.3.1 structure (flat)")
+elseif(EXISTS "${FREERTOS_DIR}/Source/FreeRTOS.h")
+    # Older structure: everything in Source/
+    set(FREERTOS_HEADER_DIR "${FREERTOS_DIR}/Source/include")
+    set(FREERTOS_SOURCE_DIR "${FREERTOS_DIR}/Source")
+    set(FREERTOS_STRUCTURE_V11 FALSE)
+    message(STATUS "FreeRTOS: Detected older structure (Source/)")
+else()
     message(FATAL_ERROR
-        "FreeRTOS header not found at ${FREERTOS_DIR}/Source/FreeRTOS.h\n"
+        "FreeRTOS header not found at ${FREERTOS_DIR}/include/FreeRTOS.h or ${FREERTOS_DIR}/Source/FreeRTOS.h\n"
         "Check that FREERTOS_DIR points to a valid FreeRTOS kernel directory."
     )
 endif()
@@ -60,17 +72,17 @@ message(STATUS "FreeRTOS port: ${FREERTOS_PORT_PATH}")
 
 # ===== COLLECT FREERTOS SOURCE FILES =====
 # Check if this is a stub (Phase 5) or real FreeRTOS (Phase 9+)
-if(EXISTS "${FREERTOS_DIR}/Source/croutine.c")
+if(EXISTS "${FREERTOS_SOURCE_DIR}/croutine.c")
     # Real FreeRTOS kernel with full source
     set(FREERTOS_SOURCES
-        ${FREERTOS_DIR}/Source/croutine.c
-        ${FREERTOS_DIR}/Source/event_groups.c
-        ${FREERTOS_DIR}/Source/list.c
-        ${FREERTOS_DIR}/Source/queue.c
-        ${FREERTOS_DIR}/Source/stream_buffer.c
-        ${FREERTOS_DIR}/Source/tasks.c
-        ${FREERTOS_DIR}/Source/timers.c
-        ${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c
+        ${FREERTOS_SOURCE_DIR}/croutine.c
+        ${FREERTOS_SOURCE_DIR}/event_groups.c
+        ${FREERTOS_SOURCE_DIR}/list.c
+        ${FREERTOS_SOURCE_DIR}/queue.c
+        ${FREERTOS_SOURCE_DIR}/stream_buffer.c
+        ${FREERTOS_SOURCE_DIR}/tasks.c
+        ${FREERTOS_SOURCE_DIR}/timers.c
+        ${FREERTOS_SOURCE_DIR}/portable/MemMang/heap_4.c
     )
 
     # Add port-specific C sources
@@ -81,7 +93,12 @@ if(EXISTS "${FREERTOS_DIR}/Source/croutine.c")
     file(GLOB FREERTOS_PORT_ASM "${FREERTOS_PORT_PATH}/*.s")
     list(APPEND FREERTOS_SOURCES ${FREERTOS_PORT_ASM})
 
-    message(STATUS "FreeRTOS sources: ${FREERTOS_SOURCES}")
+    # Add POSIX port utilities if they exist (for POSIX implementation port)
+    if(EXISTS "${FREERTOS_PORT_PATH}/utils/wait_for_event.c")
+        list(APPEND FREERTOS_SOURCES "${FREERTOS_PORT_PATH}/utils/wait_for_event.c")
+    endif()
+
+    message(STATUS "FreeRTOS sources found: Real kernel (${FREERTOS_SOURCES})")
 else()
     # Stub headers for Phase 5 validation - no actual compilation
     message(STATUS "FreeRTOS: Using stub headers (Phase 5 validation mode)")
@@ -102,9 +119,11 @@ endif()
 # For both OBJECT and INTERFACE libraries
 if(FREERTOS_SOURCES)
     target_include_directories(FreeRTOS PUBLIC
-        ${FREERTOS_DIR}/Source/include
-        ${FREERTOS_DIR}/Source
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/config
+        ${FREERTOS_HEADER_DIR}
+        ${FREERTOS_SOURCE_DIR}
         ${FREERTOS_PORT_PATH}
+        ${FREERTOS_PORT_PATH}/utils
     )
     target_compile_options(FreeRTOS PRIVATE
         -Wall
@@ -113,14 +132,15 @@ if(FREERTOS_SOURCES)
 else()
     # Stub mode: just provide include directories for header checking
     target_include_directories(FreeRTOS INTERFACE
-        ${FREERTOS_DIR}/Source
+        ${FREERTOS_HEADER_DIR}
+        ${FREERTOS_SOURCE_DIR}
         ${FREERTOS_PORT_PATH}
     )
 endif()
 
 # ===== EXPORT VARIABLES FOR PARENT PROJECT =====
 set(FREERTOS_INCLUDE_DIRS
-    ${FREERTOS_DIR}/Source/include
+    ${FREERTOS_HEADER_DIR}
     ${FREERTOS_PORT_PATH}
     CACHE STRING "FreeRTOS include directories"
 )

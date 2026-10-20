@@ -45,7 +45,7 @@ void vExampleTask(void *pvParameters) {
         #endif
 
         /* Periodic delay: 1000 ms (1 second) */
-        vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1000));
+        xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1000));
     }
 }
 

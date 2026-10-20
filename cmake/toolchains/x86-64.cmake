@@ -28,7 +28,8 @@ set(CMAKE_EXE_LINKER_FLAGS "-pthread -pie")
 
 # ===== FREERTOS CONFIGURATION =====
 # Use POSIX simulation of FreeRTOS for testing
-set(FREERTOS_PORT_DIR "Source/portable/GCC/posix")
+# FreeRTOS v11.3.1 has Posix in ThirdParty/GCC/
+set(FREERTOS_PORT_DIR "portable/ThirdParty/GCC/Posix")
 
 # ===== HAL CONFIGURATION =====
 # x86-64 POSIX simulation target
