@@ -78,14 +78,6 @@ void vHAL_Init(void) {
     vConfigureTickTimer(1000);
 }
 
-/* ===== UTILITY FUNCTIONS ===== */
-
-static void x86_log_message(const char *msg) {
-    if (msg != NULL) {
-        printf("%s\n", msg);
-        fflush(stdout);
-    }
-}
 
 void log_int(const char *label, int32_t value) {
     if (label != NULL) {
