@@ -76,6 +76,9 @@ build_architecture() {
     chmod 755 "$build_cache"
 
     # Run build inside container
+    # Use absolute paths for CMake toolchain to ensure proper detection
+    local abs_toolchain="/home/builder/project/${toolchain_file}"
+
     docker run --rm \
         -v "${CACHE_DIR}/downloads:/home/builder/.freertos-cache/downloads:ro" \
         -v "$build_cache:/home/builder/build" \
@@ -87,7 +90,8 @@ build_architecture() {
             source /opt/freertos-env.sh
             mkdir -p build
             cd build
-            cmake .. -DCMAKE_TOOLCHAIN_FILE=${toolchain_file}
+            rm -f CMakeCache.txt
+            cmake /home/builder/project -DCMAKE_TOOLCHAIN_FILE=${abs_toolchain}
             make -j\$(nproc)
         " || {
         echo "ERROR: Build failed for $arch"

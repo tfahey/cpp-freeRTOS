@@ -80,7 +80,7 @@ void vHAL_Init(void) {
 
 /* ===== UTILITY FUNCTIONS ===== */
 
-void log_message(const char *msg) {
+static void x86_log_message(const char *msg) {
     if (msg != NULL) {
         printf("%s\n", msg);
         fflush(stdout);

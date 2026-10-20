@@ -59,41 +59,64 @@ endif()
 message(STATUS "FreeRTOS port: ${FREERTOS_PORT_PATH}")
 
 # ===== COLLECT FREERTOS SOURCE FILES =====
-set(FREERTOS_SOURCES
-    ${FREERTOS_DIR}/Source/croutine.c
-    ${FREERTOS_DIR}/Source/event_groups.c
-    ${FREERTOS_DIR}/Source/list.c
-    ${FREERTOS_DIR}/Source/queue.c
-    ${FREERTOS_DIR}/Source/stream_buffer.c
-    ${FREERTOS_DIR}/Source/tasks.c
-    ${FREERTOS_DIR}/Source/timers.c
-    ${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c
-)
+# Check if this is a stub (Phase 5) or real FreeRTOS (Phase 9+)
+if(EXISTS "${FREERTOS_DIR}/Source/croutine.c")
+    # Real FreeRTOS kernel with full source
+    set(FREERTOS_SOURCES
+        ${FREERTOS_DIR}/Source/croutine.c
+        ${FREERTOS_DIR}/Source/event_groups.c
+        ${FREERTOS_DIR}/Source/list.c
+        ${FREERTOS_DIR}/Source/queue.c
+        ${FREERTOS_DIR}/Source/stream_buffer.c
+        ${FREERTOS_DIR}/Source/tasks.c
+        ${FREERTOS_DIR}/Source/timers.c
+        ${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c
+    )
 
-# Add port-specific C sources
-file(GLOB FREERTOS_PORT_SOURCES "${FREERTOS_PORT_PATH}/*.c")
-list(APPEND FREERTOS_SOURCES ${FREERTOS_PORT_SOURCES})
+    # Add port-specific C sources
+    file(GLOB FREERTOS_PORT_SOURCES "${FREERTOS_PORT_PATH}/*.c")
+    list(APPEND FREERTOS_SOURCES ${FREERTOS_PORT_SOURCES})
 
-# Add port-specific assembly sources
-file(GLOB FREERTOS_PORT_ASM "${FREERTOS_PORT_PATH}/*.s")
-list(APPEND FREERTOS_SOURCES ${FREERTOS_PORT_ASM})
+    # Add port-specific assembly sources
+    file(GLOB FREERTOS_PORT_ASM "${FREERTOS_PORT_PATH}/*.s")
+    list(APPEND FREERTOS_SOURCES ${FREERTOS_PORT_ASM})
 
-message(STATUS "FreeRTOS sources: ${FREERTOS_SOURCES}")
+    message(STATUS "FreeRTOS sources: ${FREERTOS_SOURCES}")
+else()
+    # Stub headers for Phase 5 validation - no actual compilation
+    message(STATUS "FreeRTOS: Using stub headers (Phase 5 validation mode)")
+    message(STATUS "FreeRTOS sources: [Stub mode - no real kernel sources]")
+    set(FREERTOS_SOURCES "")
+endif()
 
 # ===== CREATE FREERTOS LIBRARY OBJECT =====
-add_library(FreeRTOS OBJECT ${FREERTOS_SOURCES})
+# For Phase 5 stubs with no sources, create an interface library
+# For Phase 9+ with real kernel, create an object library
+if(FREERTOS_SOURCES)
+    add_library(FreeRTOS OBJECT ${FREERTOS_SOURCES})
+else()
+    add_library(FreeRTOS INTERFACE)
+endif()
 
 # ===== SET INCLUDE DIRECTORIES =====
-target_include_directories(FreeRTOS PUBLIC
-    ${FREERTOS_DIR}/Source/include
-    ${FREERTOS_PORT_PATH}
-)
-
-# ===== COMPILER FLAGS FOR FREERTOS =====
-target_compile_options(FreeRTOS PRIVATE
-    -Wall
-    -Wextra
-)
+# For both OBJECT and INTERFACE libraries
+if(FREERTOS_SOURCES)
+    target_include_directories(FreeRTOS PUBLIC
+        ${FREERTOS_DIR}/Source/include
+        ${FREERTOS_DIR}/Source
+        ${FREERTOS_PORT_PATH}
+    )
+    target_compile_options(FreeRTOS PRIVATE
+        -Wall
+        -Wextra
+    )
+else()
+    # Stub mode: just provide include directories for header checking
+    target_include_directories(FreeRTOS INTERFACE
+        ${FREERTOS_DIR}/Source
+        ${FREERTOS_PORT_PATH}
+    )
+endif()
 
 # ===== EXPORT VARIABLES FOR PARENT PROJECT =====
 set(FREERTOS_INCLUDE_DIRS

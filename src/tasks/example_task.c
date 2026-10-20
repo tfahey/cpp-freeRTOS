@@ -4,6 +4,7 @@
 #include "example_task.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 /* ===== GLOBAL STATE ===== */
 
@@ -16,7 +17,7 @@ static TaskHandle_t g_task_handles[3] = {NULL, NULL, NULL};
 /* ===== TASK IMPLEMENTATION ===== */
 
 void vExampleTask(void *pvParameters) {
-    uint32_t task_id = (uint32_t)pvParameters;
+    uint32_t task_id = (uintptr_t)pvParameters;
     TickType_t last_wake_time = xTaskGetTickCount();
 
     /* Validate task ID */

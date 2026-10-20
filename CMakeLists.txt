@@ -18,11 +18,12 @@ endif()
 message(STATUS "Toolchain: ${CMAKE_TOOLCHAIN_FILE}")
 
 # ===== ARCHITECTURE-SPECIFIC COMPILER FLAGS =====
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM")
+# Use compiler detection (arm-linux-gnueabihf-gcc indicates ARM)
+if(CMAKE_C_COMPILER MATCHES "arm-linux-gnueabihf" OR CMAKE_SYSTEM_PROCESSOR MATCHES "ARM")
     message(STATUS "Building for ARM architecture")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a -mfpu=neon -mthumb")
     add_compile_definitions(__ARM_ARCH)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+else()
     message(STATUS "Building for x86-64 architecture")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64 -pthread")
     add_compile_definitions(__X86_64__)
@@ -44,17 +45,36 @@ set(SOURCE_FILES
     src/tasks/example_task.c
 )
 
-set(ASM_FILES
-    hal/generic-arm/startup_cortex.s
-)
+# Assembly files only for ARM
+set(ASM_FILES)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM")
+    list(APPEND ASM_FILES hal/generic-arm/startup_cortex.s)
+endif()
 
 # ===== CREATE EXECUTABLE =====
-add_executable(hello-world.elf
-    ${SOURCE_FILES}
-    ${ASM_FILES}
-    $<TARGET_OBJECTS:FreeRTOS>
-    $<TARGET_OBJECTS:HAL>
-)
+# For Phase 5 stub mode, skip actual linking (no FreeRTOS objects)
+# For Phase 9+, link with real FreeRTOS objects
+if(FREERTOS_SOURCES)
+    # Real FreeRTOS kernel - link with objects
+    add_executable(hello-world.elf
+        ${SOURCE_FILES}
+        ${ASM_FILES}
+        $<TARGET_OBJECTS:FreeRTOS>
+        $<TARGET_OBJECTS:HAL>
+    )
+    target_link_libraries(hello-world.elf PRIVATE FreeRTOS HAL)
+else()
+    # Stub mode - create executable with just source code
+    add_executable(hello-world.elf
+        ${SOURCE_FILES}
+        ${ASM_FILES}
+        $<TARGET_OBJECTS:HAL>
+    )
+    # Link with stub FreeRTOS for includes
+    target_link_libraries(hello-world.elf PRIVATE FreeRTOS HAL)
+    message(WARNING "Phase 5 stub mode: FreeRTOS objects not linked (expected)")
+    message(WARNING "Compilation will succeed but linking will fail (resolved in Phase 9)")
+endif()
 
 # ===== INCLUDE DIRECTORIES =====
 target_include_directories(hello-world.elf PRIVATE
