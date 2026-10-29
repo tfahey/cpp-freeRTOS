@@ -10,20 +10,7 @@ echo "========================================="
 echo "Build + SAST Scanning"
 echo "========================================="
 
-# Step 1: Run normal build
-echo "Step 1: Building FreeRTOS..."
-bash "${SCRIPT_DIR}/BUILD_MULTI_ARCH.sh" "$ARCH"
-
-# Step 2: Run SAST on x86-64 only
-echo ""
-echo "Step 2: Running SAST analysis..."
-
-if [[ "$ARCH" == "x86-64" || "$ARCH" == "all" ]]; then
-    run_sast_scan "x86-64"
-else
-    echo "SAST only supported on x86-64 (Veracode CLI not available for ARM)"
-fi
-
+# Define SAST function BEFORE calling it
 run_sast_scan() {
     local arch=$1
     local build_cache="${CACHE_DIR}/build-cache-${arch}"
@@ -88,6 +75,20 @@ run_sast_scan() {
         echo "WARNING: SAST scanning failed (non-fatal)"
     }
 }
+
+# Step 1: Run normal build
+echo "Step 1: Building FreeRTOS..."
+bash "${SCRIPT_DIR}/BUILD_MULTI_ARCH.sh" "$ARCH"
+
+# Step 2: Run SAST on x86-64 only
+echo ""
+echo "Step 2: Running SAST analysis..."
+
+if [[ "$ARCH" == "x86-64" || "$ARCH" == "all" ]]; then
+    run_sast_scan "x86-64"
+else
+    echo "SAST only supported on x86-64 (Veracode CLI not available for ARM)"
+fi
 
 echo ""
 echo "========================================="

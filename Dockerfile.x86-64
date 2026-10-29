@@ -1,3 +1,18 @@
+# Dockerfile for FreeRTOS Build Environment (x86-64 with Veracode CLI)
+#
+# Usage:
+#   docker build --platform linux/amd64 -t freertos-builder:x86-64 -f Dockerfile.x86-64 .
+#   docker run -it -v $(pwd):/home/builder/project freertos-builder:x86-64
+#
+# Based on: Ubuntu 22.04 LTS
+# Includes: Veracode CLI for SAST packaging (x86-64 only)
+#
+# Architecture note: This is a separate image from the base Dockerfile because
+# Veracode CLI is only available for x86-64 architecture. Use this image for:
+#   - x86-64 builds with veracode package/upload support
+#   - Manual testing via CONTAINER_MANAGER.sh with x86-64 architecture
+# For ARM64 builds, use the base Dockerfile (freertos-builder:arm64)
+
 FROM ubuntu:22.04
 
 LABEL maintainer="FreeRTOS Build Team"
@@ -41,6 +56,8 @@ RUN apt-get update && apt-get install -y \
 # ===== INSTALL VERACODE CLI =====
 # Note: Installation may fail in some environments; marked as non-fatal
 RUN curl -fsS https://tools.veracode.com/veracode-cli/install | sh || true
+# Fix permissions to allow non-root user execution (chmod 755)
+RUN chmod 755 /veracode 2>/dev/null || true
 
 # ===== CREATE NON-ROOT USER =====
 RUN useradd -m -s /bin/bash -u 1000 builder && \

@@ -1,3 +1,15 @@
+# Dockerfile for FreeRTOS Build Environment (base, ARM64-compatible)
+#
+# Usage:
+#   docker build -t freertos-builder:arm .
+#   docker run -it -v $(pwd):/home/builder/project freertos-builder:arm
+#
+# Based on: Ubuntu 22.04 LTS
+#
+# Note: This is the base image for ARM64 builds (no Veracode CLI).
+# For x86-64 builds with Veracode SAST packaging, use Dockerfile.x86-64
+# Reason: Veracode CLI is x86-64 only and not available for ARM64
+
 FROM ubuntu:22.04
 
 LABEL maintainer="FreeRTOS Build Team"
