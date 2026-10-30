@@ -55,9 +55,9 @@ endif()
 # For Phase 9+, link with real FreeRTOS objects
 if(FREERTOS_SOURCES)
     # Real FreeRTOS kernel - link with objects
+    # Note: ASM_FILES not included here since they're already in HAL target
     add_executable(hello-world.elf
         ${SOURCE_FILES}
-        ${ASM_FILES}
         $<TARGET_OBJECTS:FreeRTOS>
         $<TARGET_OBJECTS:HAL>
     )
@@ -90,7 +90,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM")
     set(LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/hal/generic-arm/arm_memory.ld")
     target_link_options(hello-world.elf PRIVATE
         -T${LINKER_SCRIPT}
-        --gc-sections
+        -Wl,--gc-sections
         -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/hello-world.map
     )
     message(STATUS "Linker script: ${LINKER_SCRIPT}")

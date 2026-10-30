@@ -81,7 +81,7 @@ build_architecture() {
 
     docker run --rm \
         -v "${CACHE_DIR}/downloads:/home/builder/.freertos-cache/downloads:ro" \
-        -v "$build_cache:/home/builder/build" \
+        -v "$build_cache:/home/builder/project/build" \
         -v "${PROJECT_DIR}:/home/builder/project" \
         -w /home/builder/project \
         --memory=14g \

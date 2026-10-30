@@ -99,13 +99,6 @@ void vTimerInterruptHandler(void) {
 
 /* ===== UTILITY FUNCTIONS ===== */
 
-void log_message(const char *msg) {
-    if (msg != NULL) {
-        vUART_SendString(msg);
-        vUART_SendByte('\n');
-    }
-}
-
 void log_int(const char *label, int32_t value) {
     if (label != NULL) {
         vUART_SendString(label);

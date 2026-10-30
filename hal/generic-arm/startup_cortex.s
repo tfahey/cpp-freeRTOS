@@ -31,6 +31,7 @@ _reset_handler:
     mov r2, #0
 bss_loop:
     cmp r0, r1
+    itt ne
     strne r2, [r0], #4
     bne bss_loop
 

@@ -101,7 +101,7 @@ run_sast_scan() {
         echo "📦 Using ephemeral container"
         docker run --rm \
             -v "${CACHE_DIR}/downloads:/home/builder/.freertos-cache/downloads:ro" \
-            -v "$build_cache:/home/builder/build" \
+            -v "$build_cache:/home/builder/project/build" \
             -v "${PROJECT_DIR}:/home/builder/project" \
             -e VERACODE_API_ID="${VERACODE_API_ID:-}" \
             -e VERACODE_API_KEY="${VERACODE_API_KEY:-}" \
