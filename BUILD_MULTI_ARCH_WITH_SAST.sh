@@ -67,9 +67,10 @@ run_sast_scan() {
 
                     # Create veracode package (if veracode CLI available)
                     if command -v veracode &> /dev/null; then
+                        mkdir -p ../veracode-package
                         veracode package \
                             --source ../build \
-                            --target ../veracode-package \
+                            --output ../veracode-package \
                             --exclude '*.o,*.a' || true
 
                         # Upload if credentials provided
@@ -132,9 +133,10 @@ run_sast_scan() {
 
                 # Create veracode package (if veracode CLI available)
                 if command -v veracode &> /dev/null; then
+                    mkdir -p ../veracode-package
                     veracode package \
                         --source ../build \
-                        --target ../veracode-package \
+                        --output ../veracode-package \
                         --exclude '*.o,*.a' || true
 
                     # Upload if credentials provided
